@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shoalhaven Data Viewer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #f9fafb; }
+    table.dataTable thead th { background-color: #1f2937; color: white; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { padding: 4px 8px; border-radius: 6px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background-color: #2563eb !important; color: white !important; }
+  </style>
+</head>
+<body class="p-4">
+  <div class="container shadow-lg p-4 rounded-xl bg-white">
+    <h2 class="mb-4 text-center text-2xl font-semibold text-gray-700">Shoalhaven Data Viewer</h2>
+    <div class="overflow-x-auto">
+      <table id="dataTable" class="table table-striped table-bordered table-hover align-middle">
+        <thead>
+          <tr>
+            <% columns.forEach(col => { %>
+              <th class="text-center"><%= col %></th>
+            <% }) %>
+          </tr>
+        </thead>
+        <tbody>
+          <% records.forEach(row => { %>
+            <tr class="hover:bg-gray-50 transition">
+              <% columns.forEach(col => { %>
+                <% if (col.toLowerCase().includes('document')) { %>
+                  <td class="align-top">
+                    <% let docs = String(row[col]).split('♦'); %>
+                    <div class="space-y-1">
+                      <% docs.forEach(doc => { 
+                           let parts = doc.trim().split('-->');
+                      %>
+                        <div class="p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition text-sm">
+                          <%= parts[0].trim() %>
+                          <% if (parts[1]) { %>
+                            <a href="<%= parts[1].replace('[View]', '').trim() %>" target="_blank" class="text-blue-600 font-medium hover:underline ml-1">[View]</a>
+                          <% } %>
+                        </div>
+                      <% }) %>
+                    </div>
+                  </td>
+                <% } else if (String(row[col]).startsWith("http")) { %>
+                  <td><a href="<%= row[col] %>" target="_blank" class="text-blue-600 hover:underline"><%= row[col] %></a></td>
+                <% } else { %>
+                  <td><%= row[col] %></td>
+                <% } %>
+              <% }) %>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#dataTable').DataTable({
+        pageLength: 15,
+        lengthMenu: [10, 15, 25, 50],
+        language: { searchPlaceholder: "Search Shoalhaven data..." }
+      });
+    });
+  </script>
+</body>
+</html>
