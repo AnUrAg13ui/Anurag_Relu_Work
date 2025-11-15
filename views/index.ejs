@@ -2,72 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Anurag Relu Task</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <title>Anurag Relu task</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background-color: #f9fafb; }
-    table.dataTable thead th { background-color: #1f2937; color: white; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button { padding: 4px 8px; border-radius: 6px; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background-color: #2563eb !important; color: white !important; }
-  </style>
 </head>
-<body class="p-4">
-  <div class="container shadow-lg p-4 rounded-xl bg-white">
-    <h2 class="mb-4 text-center text-2xl font-semibold text-gray-700">Anurag Relu Work Final CSV</h2>
-    <div class="overflow-x-auto">
-      <table id="dataTable" class="table table-striped table-bordered table-hover align-middle">
+
+<body class="min-h-screen bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 p-6">
+
+  <div class="max-w-7xl mx-auto backdrop-blur-xl bg-white/70 shadow-2xl rounded-3xl p-8 border border-white/40">
+
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center 
+               bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+      Anurag Relu task
+    </h1>
+
+    <!-- Search + Page size -->
+    <div class="flex justify-between items-center mb-6">
+
+      <input id="searchBox"
+             placeholder="Search..."
+             class="w-72 px-4 py-3 border border-gray-300 rounded-xl shadow-sm 
+                    focus:ring-2 focus:ring-indigo-500 outline-none bg-white/60 backdrop-blur">
+
+      <select id="rowsPerPage"
+              class="px-4 py-3 rounded-xl border border-gray-300 bg-white/60 backdrop-blur shadow-sm
+                     focus:ring-indigo-500 focus:ring-2">
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="overflow-x-auto rounded-2xl shadow-xl">
+      <table class="min-w-full w-full">
+
         <thead>
-          <tr>
+          <tr class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
             <% columns.forEach(col => { %>
-              <th class="text-center"><%= col %></th>
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide">
+                <%= col %>
+              </th>
             <% }) %>
           </tr>
         </thead>
-        <tbody>
-          <% records.forEach(row => { %>
-            <tr class="hover:bg-gray-50 transition">
-              <% columns.forEach(col => { %>
-                <% if (col.toLowerCase().includes('document')) { %>
-                  <td class="align-top">
-                    <% let docs = String(row[col]).split('♦'); %>
-                    <div class="space-y-1">
-                      <% docs.forEach(doc => { 
-                           let parts = doc.trim().split('-->');
-                      %>
-                        <div class="p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition text-sm">
-                          <%= parts[0].trim() %>
-                          <% if (parts[1]) { %>
-                            <a href="<%= parts[1].replace('[View]', '').trim() %>" target="_blank" class="text-blue-600 font-medium hover:underline ml-1">[View]</a>
-                          <% } %>
-                        </div>
-                      <% }) %>
-                    </div>
+
+        <tbody id="tableBody" class="divide-y divide-gray-300">
+          <% records.forEach((row, index) => { %>
+
+            <tr class="
+              hover:bg-gradient-to-r hover:from-purple-100 hover:to-indigo-100 
+              transition-all duration-200
+              hover:scale-[1.01] 
+              <%= index % 2 === 0 ? 'bg-white/60' : 'bg-white/40' %>
+            ">
+
+              <% columns.forEach(col => { 
+                   const value = String(row[col]).trim();
+                   const isLink = value.startsWith("http");
+              %>
+
+                <% if (isLink) { %>
+                  <td class="px-4 py-4 text-sm max-w-[250px] break-words text-indigo-700 underline">
+                    <a href="<%= value %>" target="_blank">Open Link</a>
                   </td>
-                <% } else if (String(row[col]).startsWith("http")) { %>
-                  <td><a href="<%= row[col] %>" target="_blank" class="text-blue-600 hover:underline"><%= row[col] %></a></td>
+
                 <% } else { %>
-                  <td><%= row[col] %></td>
+                  <td class="px-4 py-4 text-sm max-w-[250px] break-words text-gray-800">
+                    <%= value %>
+                  </td>
                 <% } %>
+
               <% }) %>
+
             </tr>
+
           <% }) %>
         </tbody>
+
       </table>
     </div>
+
   </div>
-  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+
+  <!-- SCRIPT: TEXT TRIMMER + SEARCH + PAGE SIZE -->
   <script>
-    $(document).ready(function() {
-      $('#dataTable').DataTable({
-        pageLength: 15,
-        lengthMenu: [10, 15, 25, 50],
-        language: { searchPlaceholder: "Search Shoalhaven data..." }
+
+    // LIMIT ALL CELLS TO 30 WORDS
+    function trimToWords(maxWords = 30) {
+      document.querySelectorAll("td").forEach(td => {
+        let txt = td.textContent.trim();
+        let words = txt.split(/\s+/);
+
+        if (words.length > maxWords) {
+          td.textContent = words.slice(0, maxWords).join(" ") + " ...";
+        }
+      });
+    }
+
+    trimToWords(30);
+
+    // SEARCH
+    document.getElementById("searchBox").addEventListener("input", function () {
+      let search = this.value.toLowerCase();
+      document.querySelectorAll("#tableBody tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(search) ? "" : "none";
       });
     });
+
+    // ROWS PER PAGE
+    document.getElementById("rowsPerPage").addEventListener("change", function () {
+      let limit = parseInt(this.value);
+      let rows = document.querySelectorAll("#tableBody tr");
+      rows.forEach((row, index) => {
+        row.style.display = index < limit ? "" : "none";
+      });
+    });
+
+    document.getElementById("rowsPerPage").dispatchEvent(new Event("change"));
+
   </script>
+
 </body>
 </html>
